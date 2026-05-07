@@ -1,0 +1,819 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pediatria APS - Curvas OMS e Tanner</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#f1f5f9;
+    margin:0;
+    padding:20px;
+    color:#0f172a;
+}
+.container{
+    max-width:1250px;
+    margin:auto;
+}
+.card{
+    background:white;
+    border-radius:22px;
+    padding:22px;
+    margin-bottom:20px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.06);
+}
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:16px;
+}
+input,select{
+    width:100%;
+    padding:12px;
+    border-radius:12px;
+    border:1px solid #cbd5e1;
+}
+button{
+    background:#2563eb;
+    color:white;
+    border:none;
+    padding:12px 18px;
+    border-radius:12px;
+    cursor:pointer;
+}
+.metric{
+    font-size:34px;
+    font-weight:bold;
+}
+.small{
+    color:#64748b;
+    font-size:14px;
+}
+.badge{
+    display:inline-block;
+    padding:8px 14px;
+    border-radius:999px;
+    background:#dbeafe;
+    color:#1d4ed8;
+    font-size:14px;
+}
+.curve{
+    position:relative;
+    height:300px;
+    border-radius:18px;
+    border:1px solid #cbd5e1;
+    background:#ffffff;
+    overflow:hidden;
+}
+.zline{
+    position:absolute;
+    width:100%;
+    border-top:1px dashed #cbd5e1;
+}
+.zlabel{
+    position:absolute;
+    left:8px;
+    font-size:12px;
+    color:#64748b;
+}
+.dot{
+    position:absolute;
+    width:18px;
+    height:18px;
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+    box-shadow:0 0 0 4px rgba(37,99,235,0.15);
+}
+.curve-title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+}
+.table{
+    width:100%;
+    border-collapse:collapse;
+}
+.table th,.table td{
+    border:1px solid #e2e8f0;
+    padding:10px;
+    vertical-align:top;
+    text-align:left;
+}
+.table th{
+    background:#f8fafc;
+}
+.tanner-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:12px;
+}
+.tanner-stage{
+    border:1px solid #e2e8f0;
+    border-radius:16px;
+    padding:12px;
+    background:#fff;
+}
+.silhouette{
+    height:120px;
+    border-radius:14px;
+    background:linear-gradient(180deg,#f8fafc,#e2e8f0);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:10px;
+}
+.figure{
+    width:54px;
+    height:88px;
+    border-radius:28px 28px 18px 18px;
+    background:#cbd5e1;
+    position:relative;
+}
+.figure:before{
+    content:"";
+    position:absolute;
+    top:-24px;
+    left:15px;
+    width:24px;
+    height:24px;
+    border-radius:50%;
+    background:#cbd5e1;
+}
+.stage-dot{
+    position:absolute;
+    bottom:8px;
+    left:50%;
+    transform:translateX(-50%);
+    height:8px;
+    border-radius:999px;
+    background:#64748b;
+}
+ul{
+    padding-left:18px;
+}
+@media print{
+button{
+    display:none;
+}
+body{
+    background:white;
+}
+.card{
+    box-shadow:none;
+    border:1px solid #e2e8f0;
+}
+}
+
+.landing{
+    position:fixed;
+    inset:0;
+    background:linear-gradient(135deg,#dbeafe,#f8fafc);
+    z-index:9999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+.landing-card{
+    max-width:720px;
+    width:100%;
+    background:white;
+    border-radius:30px;
+    padding:42px;
+    text-align:center;
+    box-shadow:0 20px 60px rgba(15,23,42,0.18);
+}
+.landing-card h1{
+    font-size:34px;
+    margin-bottom:18px;
+}
+.landing-card p{
+    font-size:20px;
+    color:#475569;
+}
+.landing-button{
+    margin-top:26px;
+    font-size:18px;
+    border-radius:999px;
+    padding:14px 26px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="landing" class="landing">
+  <div class="landing-card">
+    <h1>Do insubstituível Ber do coração de vcs :)</h1>
+    <p>Calculadora Pediátrica APS</p>
+    <button class="landing-button" onclick="entrarSite()">Avançar →</button>
+  </div>
+</div>
+
+
+<div class="container">
+
+<div class="card">
+<h1>Calculadora Pediátrica APS</h1>
+<p class="small">Curvas OMS • Z-score estimado • Desenvolvimento • Alimentação • Tanner • Orientações aos pais</p>
+
+</div>
+
+<div class="card">
+<div class="grid">
+<div>
+<label>Idade (anos)</label>
+<input type="number" id="anos" value="3">
+</div>
+
+<div>
+<label>Meses adicionais</label>
+<input type="number" id="meses" value="0">
+</div>
+
+<div>
+<label>Sexo</label>
+<select id="sexo">
+<option value="F">Feminino</option>
+<option value="M">Masculino</option>
+</select>
+</div>
+
+<div>
+<label>Peso (kg)</label>
+<input type="number" id="peso" value="15">
+</div>
+
+<div>
+<label>Altura (cm)</label>
+<input type="number" id="altura" value="95">
+</div>
+</div>
+
+<br>
+<button onclick="calcular()">Atualizar avaliação</button>
+</div>
+
+<div class="grid">
+<div class="card">
+<h3>IMC</h3>
+<div class="metric" id="imc">-</div>
+<p id="classificacaoImc"></p>
+</div>
+
+<div class="card">
+<h3>Idade em meses</h3>
+<div class="metric" id="idadeMeses">-</div>
+<p class="small">Usado para localizar as curvas por idade.</p>
+</div>
+
+<div class="card">
+<h3>Resumo nutricional</h3>
+<div class="badge" id="resumoNutricional">Faixa esperada</div>
+<p class="small">Classificação automática estimada.</p>
+</div>
+</div>
+
+<div class="card">
+<h2>Curvas OMS — marcação independente</h2>
+<p class="small">
+Cada curva tem seu próprio ponto e sua própria classificação. A posição vertical muda conforme o Z-score: abaixo da média aparece mais abaixo; acima, mais acima.
+</p>
+
+<div class="grid">
+
+<div class="card">
+<div class="curve-title">
+<h3>Peso / idade</h3>
+<span class="badge" id="badgePeso">-</span>
+</div>
+<div class="metric" id="zPeso">0</div>
+
+<div class="curve">
+<div class="zline" style="top:8%"></div>
+<div class="zline" style="top:22%"></div>
+<div class="zline" style="top:36%"></div>
+<div class="zline" style="top:50%"></div>
+<div class="zline" style="top:64%"></div>
+<div class="zline" style="top:78%"></div>
+<div class="zline" style="top:92%"></div>
+
+<div class="zlabel" style="top:5%">+3 DP</div>
+<div class="zlabel" style="top:19%">+2 DP</div>
+<div class="zlabel" style="top:33%">+1 DP</div>
+<div class="zlabel" style="top:47%">0 DP</div>
+<div class="zlabel" style="top:61%">-1 DP</div>
+<div class="zlabel" style="top:75%">-2 DP</div>
+<div class="zlabel" style="top:89%">-3 DP</div>
+
+<div id="dotPeso" class="dot" style="left:60%;top:50%;background:#2563eb"></div>
+</div>
+</div>
+
+<div class="card">
+<div class="curve-title">
+<h3>Altura / idade</h3>
+<span class="badge" id="badgeAltura">-</span>
+</div>
+<div class="metric" id="zAltura">0</div>
+
+<div class="curve">
+<div class="zline" style="top:8%"></div>
+<div class="zline" style="top:22%"></div>
+<div class="zline" style="top:36%"></div>
+<div class="zline" style="top:50%"></div>
+<div class="zline" style="top:64%"></div>
+<div class="zline" style="top:78%"></div>
+<div class="zline" style="top:92%"></div>
+
+<div class="zlabel" style="top:5%">+3 DP</div>
+<div class="zlabel" style="top:19%">+2 DP</div>
+<div class="zlabel" style="top:33%">+1 DP</div>
+<div class="zlabel" style="top:47%">0 DP</div>
+<div class="zlabel" style="top:61%">-1 DP</div>
+<div class="zlabel" style="top:75%">-2 DP</div>
+<div class="zlabel" style="top:89%">-3 DP</div>
+
+<div id="dotAltura" class="dot" style="left:60%;top:50%;background:#9333ea"></div>
+</div>
+</div>
+
+<div class="card">
+<div class="curve-title">
+<h3>IMC / idade</h3>
+<span class="badge" id="badgeImc">-</span>
+</div>
+<div class="metric" id="zImc">0</div>
+
+<div class="curve">
+<div class="zline" style="top:8%"></div>
+<div class="zline" style="top:22%"></div>
+<div class="zline" style="top:36%"></div>
+<div class="zline" style="top:50%"></div>
+<div class="zline" style="top:64%"></div>
+<div class="zline" style="top:78%"></div>
+<div class="zline" style="top:92%"></div>
+
+<div class="zlabel" style="top:5%">+3 DP</div>
+<div class="zlabel" style="top:19%">+2 DP</div>
+<div class="zlabel" style="top:33%">+1 DP</div>
+<div class="zlabel" style="top:47%">0 DP</div>
+<div class="zlabel" style="top:61%">-1 DP</div>
+<div class="zlabel" style="top:75%">-2 DP</div>
+<div class="zlabel" style="top:89%">-3 DP</div>
+
+<div id="dotImc" class="dot" style="left:60%;top:50%;background:#16a34a"></div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="grid">
+<div class="card">
+<h2>Marcos do desenvolvimento</h2>
+<ul id="marcos"></ul>
+</div>
+
+<div class="card">
+<h2>Alimentação recomendada</h2>
+<ul id="alimentacao"></ul>
+</div>
+
+<div class="card">
+<h2>Rastreios e rotina</h2>
+<ul id="rotina"></ul>
+</div>
+</div>
+
+<div class="card">
+<h2>Escala de Tanner</h2>
+<p class="small">
+Esquema educativo não explícito. Usar para apoio visual e registro clínico; avaliação real deve ser feita com exame físico adequado, privacidade e consentimento.
+</p>
+
+<div class="tanner-grid">
+<div class="tanner-stage">
+<div class="silhouette"><div class="figure"><div class="stage-dot" style="width:10px"></div></div></div>
+<b>Tanner 1</b>
+<p class="small">Pré-puberal. Sem desenvolvimento puberal evidente.</p>
+</div>
+
+<div class="tanner-stage">
+<div class="silhouette"><div class="figure"><div class="stage-dot" style="width:20px"></div></div></div>
+<b>Tanner 2</b>
+<p class="small">Início puberal. Broto mamário ou aumento testicular inicial; poucos pelos.</p>
+</div>
+
+<div class="tanner-stage">
+<div class="silhouette"><div class="figure"><div class="stage-dot" style="width:32px"></div></div></div>
+<b>Tanner 3</b>
+<p class="small">Progressão puberal. Maior desenvolvimento corporal e pilificação.</p>
+</div>
+
+<div class="tanner-stage">
+<div class="silhouette"><div class="figure"><div class="stage-dot" style="width:44px"></div></div></div>
+<b>Tanner 4</b>
+<p class="small">Puberdade avançada. Caracteres sexuais quase adultos.</p>
+</div>
+
+<div class="tanner-stage">
+<div class="silhouette"><div class="figure"><div class="stage-dot" style="width:54px"></div></div></div>
+<b>Tanner 5</b>
+<p class="small">Padrão adulto.</p>
+</div>
+</div>
+
+<br>
+
+<table class="table">
+<thead>
+<tr>
+<th>Estágio</th>
+<th>Meninas</th>
+<th>Meninos</th>
+<th>Pelos pubianos</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T1</td>
+<td>Pré-puberal</td>
+<td>Pré-puberal</td>
+<td>Ausentes</td>
+</tr>
+<tr>
+<td>T2</td>
+<td>Broto mamário</td>
+<td>Aumento inicial do volume testicular</td>
+<td>Poucos, finos, pouco pigmentados</td>
+</tr>
+<tr>
+<td>T3</td>
+<td>Aumento de mama e aréola</td>
+<td>Crescimento peniano e testicular</td>
+<td>Mais escuros, encaracolados, maior quantidade</td>
+</tr>
+<tr>
+<td>T4</td>
+<td>Aréola e papila formam elevação secundária</td>
+<td>Maior crescimento genital, pigmentação escrotal</td>
+<td>Tipo adulto, menor extensão</td>
+</tr>
+<tr>
+<td>T5</td>
+<td>Mama adulta</td>
+<td>Genitália adulta</td>
+<td>Tipo adulto e distribuição adulta</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<div class="card">
+<h2>Orientações aos pais</h2>
+
+<select id="orientacao" onchange="mudarOrientacao()">
+<option value="ivas">IVAS / Resfriado</option>
+<option value="febre">Febre</option>
+<option value="asma">Asma / Chiado</option>
+<option value="diarreia">Diarreia</option>
+</select>
+
+<br><br>
+
+<ul id="textoOrientacao"></ul>
+<br>
+<button onclick="printOrientacoes()">Imprimir orientações</button>
+</div>
+
+</div>
+
+<script>
+
+const orientacoes = {
+ivas:[
+"Oferecer líquidos e manter alimentação habitual.",
+"Lavagem nasal com soro fisiológico pode ajudar.",
+"Evitar antibióticos sem orientação.",
+"Retornar se febre persistente, piora clínica ou dificuldade respiratória."
+],
+febre:[
+"Manter hidratação adequada.",
+"Usar antitérmico conforme orientação médica.",
+"Observar estado geral, sonolência e aceitação de líquidos.",
+"Retornar imediatamente se prostração, convulsão, manchas roxas ou sinais de desidratação."
+],
+asma:[
+"Usar espaçador corretamente, se houver prescrição.",
+"Evitar fumaça, poeira e cheiros fortes.",
+"Observar esforço respiratório, fala entrecortada e lábios arroxeados.",
+"Procurar urgência se piora progressiva ou pouca resposta ao tratamento orientado."
+],
+diarreia:[
+"Priorizar hidratação oral, preferencialmente com soro de reidratação oral.",
+"Não suspender alimentação habitual se a criança aceitar.",
+"Evitar lacticínios temporariamente, pois pode ocorrer intolerância secundária à lactose após episódios de diarreia.",
+"Retornar se sangue nas fezes, vômitos persistentes, pouca urina, sonolência ou sinais de desidratação."
+]
+};
+
+
+
+function entrarSite(){
+document.getElementById('landing').style.display='none';
+}
+
+function printOrientacoes(){
+let conteudo=document.getElementById('textoOrientacao').innerHTML;
+let janela=window.open('', '', 'width=800,height=600');
+janela.document.write(`
+<html>
+<head>
+<title>Orientações aos pais</title>
+<style>
+body{
+font-family:Arial,sans-serif;
+padding:30px;
+color:#0f172a;
+}
+h1{
+margin-bottom:20px;
+}
+li{
+margin-bottom:12px;
+font-size:18px;
+}
+
+.landing{
+    position:fixed;
+    inset:0;
+    background:linear-gradient(135deg,#dbeafe,#f8fafc);
+    z-index:9999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+.landing-card{
+    max-width:720px;
+    width:100%;
+    background:white;
+    border-radius:30px;
+    padding:42px;
+    text-align:center;
+    box-shadow:0 20px 60px rgba(15,23,42,0.18);
+}
+.landing-card h1{
+    font-size:34px;
+    margin-bottom:18px;
+}
+.landing-card p{
+    font-size:20px;
+    color:#475569;
+}
+.landing-button{
+    margin-top:26px;
+    font-size:18px;
+    border-radius:999px;
+    padding:14px 26px;
+}
+
+</style>
+</head>
+<body>
+
+<div id="landing" class="landing">
+  <div class="landing-card">
+    <h1>Do insubstituível Ber do coração de vcs :)</h1>
+    <p>Calculadora Pediátrica APS</p>
+    <button class="landing-button" onclick="entrarSite()">Avançar →</button>
+  </div>
+</div>
+
+<h1>Orientações aos pais</h1>
+<ul>${conteudo}</ul>
+</body>
+</html>
+`);
+janela.document.close();
+janela.print();
+}
+
+function mudarOrientacao(){
+let tipo=document.getElementById('orientacao').value;
+let lista=document.getElementById('textoOrientacao');
+lista.innerHTML="";
+orientacoes[tipo].forEach(item=>{
+lista.innerHTML+="<li>"+item+"</li>";
+});
+}
+
+function clamp(value,min,max){
+return Math.min(Math.max(value,min),max);
+}
+
+function zToTop(z){
+z=clamp(z,-3,3);
+return 50 - (z*14);
+}
+
+function classifyZ(type,z){
+if(type==="altura"){
+if(z < -3) return "Muito baixa estatura";
+if(z < -2) return "Baixa estatura";
+if(z <= 2) return "Altura esperada";
+return "Estatura elevada";
+}
+if(type==="peso"){
+if(z < -3) return "Muito baixo peso";
+if(z < -2) return "Baixo peso";
+if(z <= 2) return "Peso esperado";
+return "Peso elevado";
+}
+if(type==="imc"){
+if(z < -3) return "Magreza acentuada";
+if(z < -2) return "Magreza";
+if(z <= 1) return "Eutrofia";
+if(z <= 2) return "Risco de excesso";
+if(z <= 3) return "Sobrepeso/obesidade";
+return "Obesidade importante";
+}
+return "-";
+}
+
+// ESTIMATIVAS VISUAIS.
+// Para uso clínico definitivo, trocar por LMS OMS real por sexo e idade.
+// Aqui cada curva é independente: peso/idade, altura/idade e IMC/idade.
+
+function expectedByAge(type, idadeMeses, sexo){
+let anos = idadeMeses/12;
+
+if(type==="altura"){
+// aproximação grosseira de altura esperada em cm
+if(idadeMeses <= 24){
+return sexo==="M" ? 50 + idadeMeses*1.15 : 49 + idadeMeses*1.1;
+}
+if(idadeMeses <= 60){
+return sexo==="M" ? 85 + (idadeMeses-24)*0.75 : 84 + (idadeMeses-24)*0.72;
+}
+return sexo==="M" ? 110 + (anos-5)*5.5 : 109 + (anos-5)*5.3;
+}
+
+if(type==="peso"){
+// aproximação grosseira de peso esperado em kg
+if(idadeMeses <= 12){
+return sexo==="M" ? 3.4 + idadeMeses*0.55 : 3.2 + idadeMeses*0.5;
+}
+if(idadeMeses <= 60){
+return sexo==="M" ? 9.5 + (idadeMeses-12)*0.22 : 9 + (idadeMeses-12)*0.21;
+}
+return sexo==="M" ? 18 + (anos-5)*3.2 : 17.5 + (anos-5)*3.0;
+}
+
+if(type==="imc"){
+if(idadeMeses < 24) return sexo==="M" ? 16.8 : 16.5;
+if(idadeMeses < 60) return sexo==="M" ? 16.0 : 15.8;
+if(idadeMeses < 120) return sexo==="M" ? 17.0 : 16.8;
+return sexo==="M" ? 20.0 : 19.5;
+}
+
+return 0;
+}
+
+function expectedSD(type, idadeMeses){
+if(type==="altura") return idadeMeses < 60 ? 4.0 : 6.0;
+if(type==="peso") return idadeMeses < 60 ? 1.7 : 4.0;
+if(type==="imc") return 2.0;
+return 1;
+}
+
+function estimateZ(type, value, idadeMeses, sexo){
+let expected=expectedByAge(type,idadeMeses,sexo);
+let sd=expectedSD(type,idadeMeses);
+return (value-expected)/sd;
+}
+
+function updateCurve(type,z){
+let idDot="dot"+type.charAt(0).toUpperCase()+type.slice(1);
+let idBadge="badge"+type.charAt(0).toUpperCase()+type.slice(1);
+let idZ="z"+type.charAt(0).toUpperCase()+type.slice(1);
+
+document.getElementById(idDot).style.top=zToTop(z)+"%";
+
+if(z < -2){
+document.getElementById(idDot).style.background="#f59e0b";
+}
+else if(z > 2){
+document.getElementById(idDot).style.background="#dc2626";
+}
+else{
+document.getElementById(idDot).style.background="#16a34a";
+}
+
+document.getElementById(idBadge).innerText=classifyZ(type,z);
+document.getElementById(idZ).innerText=(z>=0?"+":"")+z.toFixed(1)+" DP";
+}
+
+function calcular(){
+let peso=parseFloat(document.getElementById('peso').value);
+let alturaCm=parseFloat(document.getElementById('altura').value);
+let altura=alturaCm/100;
+let anos=parseInt(document.getElementById('anos').value);
+let meses=parseInt(document.getElementById('meses').value);
+let sexo=document.getElementById('sexo').value;
+
+let idadeMeses=(anos*12)+meses;
+let imc=peso/(altura*altura);
+
+document.getElementById('idadeMeses').innerText=idadeMeses;
+document.getElementById('imc').innerText=imc.toFixed(1);
+
+let zPeso=estimateZ("peso",peso,idadeMeses,sexo);
+let zAltura=estimateZ("altura",alturaCm,idadeMeses,sexo);
+let zImc=estimateZ("imc",imc,idadeMeses,sexo);
+
+updateCurve("peso",zPeso);
+updateCurve("altura",zAltura);
+updateCurve("imc",zImc);
+
+document.getElementById('classificacaoImc').innerText=classifyZ("imc",zImc);
+document.getElementById('resumoNutricional').innerText=classifyZ("imc",zImc);
+
+let marcos=document.getElementById('marcos');
+let alimentacao=document.getElementById('alimentacao');
+let rotina=document.getElementById('rotina');
+
+if(anos <= 1){
+marcos.innerHTML=`
+<li>Sorriso social e interação progressiva</li>
+<li>Balbucio e resposta a sons</li>
+<li>Sustento cefálico, rolar e sentar conforme idade</li>
+<li>Reconhecimento de cuidadores</li>
+`;
+alimentacao.innerHTML=`
+<li>Aleitamento materno exclusivo até 6 meses quando possível</li>
+<li>Introdução alimentar progressiva após 6 meses</li>
+<li>Evitar açúcar, sucos e ultraprocessados</li>
+`;
+rotina.innerHTML=`
+<li>Vacinação</li>
+<li>Acompanhamento de crescimento e desenvolvimento</li>
+<li>Triagens neonatais conforme registro</li>
+<li>Vitamina D e ferro conforme protocolo local</li>
+`;
+}
+else if(anos <= 5){
+marcos.innerHTML=`
+<li>Linguagem progressiva, frases e compreensão</li>
+<li>Brincar simbólico e interação social</li>
+<li>Coordenação motora ampla e fina progressiva</li>
+<li>Autonomia para alimentação, higiene e rotina</li>
+`;
+alimentacao.innerHTML=`
+<li>Comida de verdade: feijão, arroz, carnes/ovos, frutas e verduras</li>
+<li>Água como principal bebida</li>
+<li>Evitar telas durante refeições</li>
+<li>Limitar ultraprocessados e açúcar</li>
+`;
+rotina.innerHTML=`
+<li>Saúde bucal</li>
+<li>Acompanhamento de IMC e crescimento</li>
+<li>Visão e audição conforme queixa/rastreio local</li>
+<li>Prevenção de acidentes</li>
+`;
+}
+else{
+marcos.innerHTML=`
+<li>Desenvolvimento escolar e comportamento</li>
+<li>Puberdade e crescimento</li>
+<li>Autonomia progressiva</li>
+<li>Socialização, sono e saúde mental</li>
+`;
+alimentacao.innerHTML=`
+<li>Atividade física regular</li>
+<li>Sono adequado</li>
+<li>Reduzir ultraprocessados, bebidas açucaradas e beliscos frequentes</li>
+<li>Avaliar relação com imagem corporal</li>
+`;
+rotina.innerHTML=`
+<li>PA, IMC e vacinação</li>
+<li>Saúde mental e sono</li>
+<li>Puberdade/Tanner quando aplicável</li>
+<li>Sexualidade, violência e substâncias conforme idade e contexto</li>
+`;
+}
+}
+
+calcular();
+mudarOrientacao();
+
+</script>
+
+</body>
+</html>
