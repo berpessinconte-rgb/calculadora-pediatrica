@@ -211,7 +211,7 @@ body{
   <div class="landing-card">
     <h1>Do insubstituível Ber do coração de vcs :)</h1>
     <p>Calculadora Pediátrica APS</p>
-    <button class="landing-button" onclick="entrarSite()">Avançar →</button>
+    <button class="landing-button" onclick="var l=document.getElementById('landing'); if(l){l.style.display='none';}">Avançar →</button>
   </div>
 </div>
 
@@ -496,6 +496,14 @@ Esquema educativo não explícito. Usar para apoio visual e registro clínico; a
 
 <script>
 
+function entrarSite(){
+var landing=document.getElementById('landing');
+if(landing){
+landing.style.display='none';
+}
+}
+
+
 const orientacoes = {
 ivas:[
 "Oferecer líquidos e manter alimentação habitual.",
@@ -525,16 +533,27 @@ diarreia:[
 
 
 
-function entrarSite(){
-document.getElementById('landing').style.display='none';
-}
+
+
 
 function printOrientacoes(){
-let conteudo=document.getElementById('textoOrientacao').innerHTML;
-let janela=window.open('', '', 'width=800,height=600');
-janela.document.write(`
-<html>
+
+var landing=document.getElementById('landing');
+if(landing){
+landing.style.display='none';
+}
+
+var tipo=document.getElementById('orientacao');
+var titulo=tipo.options[tipo.selectedIndex].text;
+var conteudo=document.getElementById('textoOrientacao').innerHTML;
+
+var janela=window.open('', '_blank', 'width=800,height=600');
+
+janela.document.open();
+janela.document.write(`<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
+<meta charset="UTF-8">
 <title>Orientações aos pais</title>
 <style>
 body{
@@ -546,63 +565,24 @@ h1{
 margin-bottom:20px;
 }
 li{
-margin-bottom:12px;
+margin-bottom:14px;
 font-size:18px;
+line-height:1.5;
 }
-
-.landing{
-    position:fixed;
-    inset:0;
-    background:linear-gradient(135deg,#dbeafe,#f8fafc);
-    z-index:9999;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-}
-.landing-card{
-    max-width:720px;
-    width:100%;
-    background:white;
-    border-radius:30px;
-    padding:42px;
-    text-align:center;
-    box-shadow:0 20px 60px rgba(15,23,42,0.18);
-}
-.landing-card h1{
-    font-size:34px;
-    margin-bottom:18px;
-}
-.landing-card p{
-    font-size:20px;
-    color:#475569;
-}
-.landing-button{
-    margin-top:26px;
-    font-size:18px;
-    border-radius:999px;
-    padding:14px 26px;
-}
-
 </style>
 </head>
 <body>
-
-<div id="landing" class="landing">
-  <div class="landing-card">
-    <h1>Do insubstituível Ber do coração de vcs :)</h1>
-    <p>Calculadora Pediátrica APS</p>
-    <button class="landing-button" onclick="entrarSite()">Avançar →</button>
-  </div>
-</div>
-
-<h1>Orientações aos pais</h1>
+<h1>${titulo}</h1>
 <ul>${conteudo}</ul>
 </body>
-</html>
-`);
+</html>`);
 janela.document.close();
+
+setTimeout(function(){
+janela.focus();
 janela.print();
+},500);
+
 }
 
 function mudarOrientacao(){
