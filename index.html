@@ -220,7 +220,7 @@ body{
 
 <div class="card">
 <h1>Calculadora Pediátrica APS</h1>
-<p class="small">Curvas OMS • Z-score estimado • Desenvolvimento • Alimentação • Tanner • Orientações aos pais</p>
+<p class="small">Curvas OMS • Z-score estimado revisado v9 • Desenvolvimento • Alimentação • Tanner • Orientações aos pais</p>
 
 </div>
 
@@ -632,129 +632,112 @@ return "-";
 // Aqui cada curva é independente: peso/idade, altura/idade e IMC/idade.
 
 
+// ===== CÁLCULO REVISADO DE Z-SCORE ESTIMADO =====
+// Ainda NÃO é LMS oficial OMS. É uma aproximação clínica visual mais coerente.
+// Para idêntico à OMS: integrar tabelas LMS oficiais por sexo, idade e indicador.
+
 function interpolate(ageYears, points){
+  if(ageYears <= points[0][0]) return points[0][1];
 
-for(let i=0;i<points.length-1;i++){
+  for(let i=0;i<points.length-1;i++){
+    let a=points[i];
+    let b=points[i+1];
 
-let a=points[i];
-let b=points[i+1];
+    if(ageYears >= a[0] && ageYears <= b[0]){
+      let ratio=(ageYears-a[0])/(b[0]-a[0]);
+      return a[1] + ((b[1]-a[1])*ratio);
+    }
+  }
 
-if(ageYears >= a[0] && ageYears <= b[0]){
-
-let ratio=(ageYears-a[0])/(b[0]-a[0]);
-
-return a[1] + ((b[1]-a[1])*ratio);
-
-}
-
-}
-
-return points[points.length-1][1];
-
+  return points[points.length-1][1];
 }
 
 function expectedByAge(type, idadeMeses, sexo){
 
-let idade = idadeMeses/12;
+  let idade = idadeMeses/12;
 
-const alturaMeninas = [
-[0,49],[1,75],[2,86],[3,95],[4,102],[5,109],
-[6,115],[7,121],[8,127],[9,133],[10,139],
-[11,145],[12,152],[13,157],[14,160],
-[15,162],[16,163],[17,163.5],[18,164]
-];
+  const alturaMeninas = [
+    [0,49],[1,75],[2,86],[3,95],[4,102],[5,109],
+    [6,115],[7,121],[8,127],[9,133],[10,139],
+    [11,145],[12,152],[13,157],[14,160],
+    [15,162],[16,163],[17,163.5],[18,164]
+  ];
 
-const alturaMeninos = [
-[0,50],[1,76],[2,87],[3,96],[4,103],[5,110],
-[6,116],[7,122],[8,128],[9,134],[10,139],
-[11,145],[12,152],[13,159],[14,166],
-[15,170],[16,173],[17,175],[18,176]
-];
+  const alturaMeninos = [
+    [0,50],[1,76],[2,87],[3,96],[4,103],[5,110],
+    [6,116],[7,122],[8,128],[9,134],[10,139],
+    [11,145],[12,152],[13,159],[14,166],
+    [15,170],[16,173],[17,175],[18,176]
+  ];
 
-const pesoMeninas = [
-[0,3.2],[1,9],[2,12],[3,14],[4,16],[5,18],
-[6,20],[7,23],[8,26],[9,29],[10,32],
-[11,36],[12,41],[13,46],[14,50],
-[15,53],[16,55],[17,56],[18,57]
-];
+  const pesoMeninas = [
+    [0,3.2],[1,9],[2,12],[3,14],[4,16],[5,18],
+    [6,20],[7,23],[8,26],[9,29],[10,32],
+    [11,36],[12,41],[13,46],[14,50],
+    [15,53],[16,55],[17,56],[18,57]
+  ];
 
-const pesoMeninos = [
-[0,3.4],[1,9.5],[2,12.5],[3,14.5],[4,16.5],[5,18.5],
-[6,21],[7,24],[8,27],[9,30],[10,33],
-[11,37],[12,42],[13,48],[14,54],
-[15,60],[16,65],[17,68],[18,70]
-];
+  const pesoMeninos = [
+    [0,3.4],[1,9.5],[2,12.5],[3,14.5],[4,16.5],[5,18.5],
+    [6,21],[7,24],[8,27],[9,30],[10,33],
+    [11,37],[12,42],[13,48],[14,54],
+    [15,60],[16,65],[17,68],[18,70]
+  ];
 
-const imcMeninas = [
-[0,16.5],[2,16.0],[5,15.5],[8,16.0],
-[10,17.0],[12,18.5],[14,20.0],
-[16,21.0],[18,21.5]
-];
+  const imcMeninas = [
+    [0,16.5],[2,16.0],[5,15.5],[8,16.0],
+    [10,17.0],[12,18.5],[14,20.0],
+    [16,21.0],[18,21.5]
+  ];
 
-const imcMeninos = [
-[0,16.8],[2,16.2],[5,15.7],[8,16.2],
-[10,17.2],[12,18.3],[14,19.5],
-[16,21.0],[18,22.0]
-];
+  const imcMeninos = [
+    [0,16.8],[2,16.2],[5,15.7],[8,16.2],
+    [10,17.2],[12,18.3],[14,19.5],
+    [16,21.0],[18,22.0]
+  ];
 
-if(type==="altura"){
+  if(type==="altura"){
+    return sexo==="F"
+      ? interpolate(idade,alturaMeninas)
+      : interpolate(idade,alturaMeninos);
+  }
 
-return sexo==="F"
-? interpolate(idade,alturaMeninas)
-: interpolate(idade,alturaMeninos);
+  if(type==="peso"){
+    return sexo==="F"
+      ? interpolate(idade,pesoMeninas)
+      : interpolate(idade,pesoMeninos);
+  }
 
+  if(type==="imc"){
+    return sexo==="F"
+      ? interpolate(idade,imcMeninas)
+      : interpolate(idade,imcMeninos);
+  }
+
+  return 0;
 }
-
-if(type==="peso"){
-
-return sexo==="F"
-? interpolate(idade,pesoMeninas)
-: interpolate(idade,pesoMeninos);
-
-}
-
-if(type==="imc"){
-
-return sexo==="F"
-? interpolate(idade,imcMeninas)
-: interpolate(idade,imcMeninos);
-
-}
-
-return 0;
-
-}
-
-
 
 function expectedSD(type, idadeMeses){
 
-let idade = idadeMeses/12;
+  let idade = idadeMeses/12;
 
-if(type==="altura"){
+  if(type==="altura"){
+    if(idade < 5) return 4.5;
+    if(idade < 10) return 5.5;
+    return 6.5;
+  }
 
-if(idade < 5) return 4.5;
-if(idade < 10) return 5.5;
-return 6.5;
+  if(type==="peso"){
+    if(idade < 5) return 2.0;
+    if(idade < 10) return 4.0;
+    return 7.0;
+  }
 
-}
+  if(type==="imc"){
+    return 2.2;
+  }
 
-if(type==="peso"){
-
-if(idade < 5) return 2.0;
-if(idade < 10) return 4.0;
-return 7.0;
-
-}
-
-if(type==="imc"){
-
-return 2.2;
-
-}
-
-return 1;
-
+  return 1;
 }
 
 
